@@ -1,0 +1,55 @@
+"""
+Flask server for the emotion detection application.
+"""
+
+import os
+from flask import Flask, render_template, request
+from EmotionDetection import emotion_detector
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+
+app = Flask(
+    "Emotion Detector",
+    template_folder=os.path.join(project_root, "templates"),
+    static_folder=os.path.join(project_root, "static")
+)
+
+@app.route("/")
+def index():
+    """
+    Render the home page.
+    """
+    return render_template("index.html")
+
+@app.route("/emotionDetector")
+def emotion_detector_route():
+    """
+    Analyze the provided text and return the formatted emotion response.
+    """
+    text_to_analyze = request.args.get("textToAnalyze")
+
+    response = emotion_detector(text_to_analyze)
+
+    if response["dominant_emotion"] is None:
+        return "Invalid text! Please try again!."
+
+    anger = response["anger"]
+    disgust = response["disgust"]
+    fear = response["fear"]
+    joy = response["joy"]
+    sadness = response["sadness"]
+    dominant_emotion = response["dominant_emotion"]
+
+    return (
+        "For the given statement, the system response is "
+        f"'anger': {anger}, "
+        f"'disgust': {disgust}, "
+        f"'fear': {fear}, "
+        f"'joy': {joy} and "
+        f"'sadness': {sadness}. "
+        f"The dominant emotion is {dominant_emotion}."
+    )
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
